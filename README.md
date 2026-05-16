@@ -290,10 +290,6 @@ git push origin feature/your-feature-name
 # Open a Pull Request
 ```
 
-Please follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages and keep PRs focused on a single concern.
-
----
-
 
 <div align="center">
 
