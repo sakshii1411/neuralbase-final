@@ -749,6 +749,7 @@ body {
 .feedback-btn:hover { border-color: var(--violet); color: var(--violet-light); }
 .feedback-btn.active-up   { background: rgba(16,185,129,0.1); border-color: var(--emerald); color: var(--emerald); }
 .feedback-btn.active-down { background: rgba(244,63,94,0.1);  border-color: var(--rose);    color: var(--rose);    }
+.feedback-btn.copy-success { background: rgba(16,185,129,0.1); border-color: var(--emerald); color: var(--emerald); }
 
 /* Loading bubble */
 .loading-bubble {

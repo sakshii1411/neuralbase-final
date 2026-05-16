@@ -456,6 +456,7 @@ function renderMessage(role, content, meta = {}) {
       <span>Was this helpful?</span>
       <button class="feedback-btn" onclick="sendFeedback(this, ${idx}, 1)" title="Helpful">👍</button>
       <button class="feedback-btn" onclick="sendFeedback(this, ${idx}, -1)" title="Not helpful">👎</button>
+      <button class="feedback-btn copy-answer-btn" onclick="copyAnswer(this)" data-answer="${escapeHtml(content)}" title="Copy answer">⎘ Copy</button>
       ${meta.searchMethod ? `<span class="search-method-label">${meta.searchMethod} search</span>` : ""}
     </div>
   `;
@@ -468,6 +469,28 @@ function toggleSources(header) {
   const body = header.nextElementSibling;
   body.classList.toggle("collapsed");
   header.querySelector(".sources-toggle").textContent = body.classList.contains("collapsed") ? "▾" : "▴";
+}
+
+function copyAnswer(btn) {
+  const text = btn.dataset.answer || "";
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = "✓ Copied";
+    btn.classList.add("copy-success");
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove("copy-success"); }, 2000);
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    btn.textContent = "✓ Copied";
+    setTimeout(() => { btn.textContent = "⎘ Copy"; }, 2000);
+  });
 }
 
 async function sendFeedback(btn, idx, value) {
