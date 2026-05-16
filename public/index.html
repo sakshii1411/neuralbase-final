@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuralBase — AI Knowledge System</title>
+  <meta name="description" content="Production-ready AI-powered knowledge base with RAG, semantic search, and knowledge graph visualization." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- Toast container -->
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<!-- App shell -->
+<div id="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">⬡</span>
+      <span class="logo-text">NeuralBase</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-view="dashboard">
+        <span class="nav-icon">◈</span>
+        <span class="nav-label">Dashboard</span>
+      </button>
+      <button class="nav-btn" data-view="chat">
+        <span class="nav-icon">◎</span>
+        <span class="nav-label">Ask AI</span>
+      </button>
+      <button class="nav-btn" data-view="documents">
+        <span class="nav-icon">◻</span>
+        <span class="nav-label">Documents</span>
+      </button>
+      <button class="nav-btn" data-view="graph">
+        <span class="nav-icon">◈</span>
+        <span class="nav-label">Knowledge Graph</span>
+      </button>
+      <button class="nav-btn" data-view="wiki">
+        <span class="nav-icon">◑</span>
+        <span class="nav-label">Wiki</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <button class="nav-btn" data-view="settings">
+        <span class="nav-icon">⊙</span>
+        <span class="nav-label">Settings</span>
+      </button>
+      <div class="sidebar-status" id="sidebar-status">
+        <span class="status-dot" id="status-dot"></span>
+        <span class="status-label" id="status-label">Connecting…</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content">
+
+    <!-- Top header -->
+    <header class="topbar">
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+
+      <div class="topbar-right">
+        <div class="model-selector-wrap" id="model-selector-wrap">
+          <label class="model-label">Model</label>
+          <select class="model-select" id="model-select">
+            <option value="">Loading…</option>
+          </select>
+        </div>
+
+        <div class="topbar-badge" id="embedding-badge">
+          <span class="badge-dot"></span>
+          <span id="embedding-label">keyword</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- View: Dashboard -->
+    <section class="view active" id="view-dashboard">
+      <div class="view-inner">
+        <div class="page-hero">
+          <h1 class="page-title">System Overview</h1>
+          <p class="page-subtitle">Real-time stats for your AI knowledge base</p>
+        </div>
+
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card skeleton">
+            <div class="stat-icon">◻</div>
+            <div class="stat-value" id="stat-docs">—</div>
+            <div class="stat-label">Documents</div>
+          </div>
+          <div class="stat-card skeleton">
+            <div class="stat-icon">⊞</div>
+            <div class="stat-value" id="stat-chunks">—</div>
+            <div class="stat-label">Indexed Chunks</div>
+          </div>
+          <div class="stat-card skeleton">
+            <div class="stat-icon">◎</div>
+            <div class="stat-value" id="stat-queries">—</div>
+            <div class="stat-label">Queries Today</div>
+          </div>
+          <div class="stat-card skeleton">
+            <div class="stat-icon">◈</div>
+            <div class="stat-value" id="stat-total">—</div>
+            <div class="stat-label">Total Queries</div>
+          </div>
+          <div class="stat-card skeleton">
+            <div class="stat-icon">◉</div>
+            <div class="stat-value" id="stat-nodes">—</div>
+            <div class="stat-label">Graph Nodes</div>
+          </div>
+          <div class="stat-card skeleton">
+            <div class="stat-icon">◑</div>
+            <div class="stat-value" id="stat-wiki">—</div>
+            <div class="stat-label">Wiki Pages</div>
+          </div>
+        </div>
+
+        <div class="dash-panels">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Recent Queries</h3>
+            </div>
+            <div class="panel-body" id="recent-queries-list">
+              <div class="empty-state">
+                <div class="empty-icon">◎</div>
+                <p>No queries yet. Ask the AI something.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3>System Info</h3>
+            </div>
+            <div class="panel-body">
+              <div class="info-row">
+                <span class="info-key">Search Engine</span>
+                <span class="info-val" id="info-search">—</span>
+              </div>
+              <div class="info-row">
+                <span class="info-key">Embedding Model</span>
+                <span class="info-val" id="info-embed">—</span>
+              </div>
+              <div class="info-row">
+                <span class="info-key">LLM Endpoint</span>
+                <span class="info-val">NVIDIA NIM</span>
+              </div>
+              <div class="info-row">
+                <span class="info-key">Graph Last Built</span>
+                <span class="info-val" id="info-graph-built">—</span>
+              </div>
+              <div class="info-row">
+                <span class="info-key">API Status</span>
+                <span class="info-val" id="info-api-status">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View: Chat -->
+    <section class="view" id="view-chat">
+      <div class="chat-layout">
+        <div class="chat-main">
+          <div class="chat-topbar">
+            <span class="chat-topbar-title">Ask AI</span>
+            <button class="clear-chat-btn" id="clear-chat-btn" title="Clear conversation" onclick="clearChat()">
+              <span>↺</span> Clear
+            </button>
+          </div>
+
+          <!-- Welcome screen sits OUTSIDE chat-messages so clearing messages never destroys it -->
+          <div class="chat-welcome" id="chat-welcome">
+            <div class="welcome-icon">◎</div>
+            <h2>Ask Your Knowledge Base</h2>
+            <p>Upload documents in the <strong>Documents</strong> tab, then ask questions. Answers are grounded strictly in your uploaded content.</p>
+            <div class="welcome-chips" id="welcome-chips">
+              <button class="chip" onclick="app.useChip(this)">How do I create a new Evening Study session?</button>
+              <button class="chip" onclick="app.useChip(this)">How do I mark attendance for Evening Study?</button>
+              <button class="chip" onclick="app.useChip(this)">How can I send notifications to parents or guardians?</button>
+              <button class="chip" onclick="app.useChip(this)">How do I manage Evening Study time slots?</button>
+              <button class="chip" onclick="app.useChip(this)">How can I add students using groups or classes?</button>
+              <button class="chip" onclick="app.useChip(this)">How do staff members view assigned sessions?</button>
+              <button class="chip" onclick="app.useChip(this)">How do I create student payment groups?</button>
+              <button class="chip" onclick="app.useChip(this)">How do I manage calendar events in the system?</button>
+            </div>
+          </div>
+
+          <div class="chat-messages hidden" id="chat-messages"></div>
+
+          <div class="chat-input-bar">
+            <div class="chat-input-wrap">
+              <textarea
+                id="chat-input"
+                class="chat-textarea"
+                placeholder="Ask a question about your documents…"
+                rows="1"
+                maxlength="2000"
+              ></textarea>
+              <button class="send-btn" id="send-btn" aria-label="Send">
+                <span class="send-icon">▶</span>
+              </button>
+            </div>
+            <div class="chat-meta-bar">
+              <span class="chat-hint">Shift+Enter for new line · Enter to send</span>
+              <span class="char-count" id="char-count">0 / 2000</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View: Documents -->
+    <section class="view" id="view-documents">
+      <div class="view-inner">
+        <div class="page-hero">
+          <h1 class="page-title">Documents</h1>
+          <p class="page-subtitle">Manage your knowledge base</p>
+        </div>
+
+        <!-- Upload zone -->
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" id="pdf-file-input" accept=".pdf,.txt,.md" multiple hidden />
+          <div class="upload-content" id="upload-content">
+            <div class="upload-icon">⬡</div>
+            <div class="upload-text">
+              <strong>Drop files here</strong> or
+              <button class="upload-browse-btn" onclick="document.getElementById('pdf-file-input').click()">browse</button>
+            </div>
+            <div class="upload-sub">PDF, TXT, MD · Up to 20 files · Max 15 MB each</div>
+          </div>
+          <div class="upload-progress hidden" id="upload-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-label" id="progress-label">Uploading…</div>
+          </div>
+        </div>
+
+        <!-- Document list -->
+        <div class="doc-list-header">
+          <h3>Indexed Documents</h3>
+          <span class="doc-count" id="doc-count-label">Loading…</span>
+        </div>
+
+        <div class="doc-list" id="doc-list">
+          <div class="doc-card skeleton"><div class="doc-card-inner"></div></div>
+          <div class="doc-card skeleton"><div class="doc-card-inner"></div></div>
+          <div class="doc-card skeleton"><div class="doc-card-inner"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View: Knowledge Graph -->
+    <section class="view" id="view-graph">
+      <div class="view-inner">
+        <div class="page-hero graph-hero">
+          <div>
+            <h1 class="page-title">Knowledge Graph</h1>
+            <p class="page-subtitle">Dynamic concept map generated from your documents</p>
+          </div>
+          <button class="btn btn-primary" id="build-graph-btn">
+            <span class="btn-icon">◈</span> Build Graph
+          </button>
+        </div>
+
+        <div class="graph-container" id="graph-container">
+          <canvas id="graph-canvas"></canvas>
+          <div class="graph-empty" id="graph-empty">
+            <div class="empty-icon">◈</div>
+            <p>Upload documents, then click <strong>Build Graph</strong> to generate a dynamic knowledge graph.</p>
+          </div>
+          <div class="graph-spinner hidden" id="graph-spinner">
+            <div class="spinner"></div>
+            <p>Extracting concepts with AI…</p>
+          </div>
+          <div class="graph-legend" id="graph-legend"></div>
+          <div class="graph-tooltip hidden" id="graph-tooltip"></div>
+          <div class="graph-controls" id="graph-controls">
+            <button class="graph-ctrl-btn" id="graph-zoom-in" title="Zoom in">＋</button>
+            <button class="graph-ctrl-btn" id="graph-zoom-out" title="Zoom out">－</button>
+            <button class="graph-ctrl-btn" id="graph-reset" title="Reset view">⟳</button>
+          </div>
+          <!-- Node details panel -->
+          <div class="graph-node-panel hidden" id="graph-node-panel">
+            <div class="node-panel-header">
+              <div>
+                <span class="node-panel-type" id="node-panel-type">Concept</span>
+                <h4 class="node-panel-label" id="node-panel-label">—</h4>
+              </div>
+              <button class="modal-close" onclick="document.getElementById('graph-node-panel').classList.add('hidden')">✕</button>
+            </div>
+            <div class="node-panel-connections" id="node-panel-connections"></div>
+            <div class="node-panel-answer" id="node-panel-answer">
+              <div class="node-panel-loading hidden" id="node-panel-loading">
+                <div class="spinner" style="width:18px;height:18px;border-width:2px"></div>
+                <span>Generating answer…</span>
+              </div>
+              <div id="node-panel-text"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View: Wiki -->
+    <section class="view" id="view-wiki">
+      <div class="view-inner">
+        <div class="page-hero wiki-hero">
+          <div>
+            <h1 class="page-title">Wiki</h1>
+            <p class="page-subtitle">AI-generated summaries from your knowledge base</p>
+          </div>
+          <button class="btn btn-primary" id="compile-wiki-btn">
+            <span class="btn-icon">◑</span> Compile Wiki
+          </button>
+        </div>
+
+        <div class="wiki-content" id="wiki-content">
+          <!-- dynamically populated by loadWiki() -->
+        </div>
+      </div>
+    </section>
+
+    <!-- View: Settings -->
+    <section class="view" id="view-settings">
+      <div class="view-inner">
+        <div class="page-hero">
+          <h1 class="page-title">Settings</h1>
+          <p class="page-subtitle">Configure your AI knowledge base</p>
+        </div>
+
+        <div class="settings-grid">
+
+          <div class="settings-panel">
+            <h3 class="settings-panel-title">AI Model</h3>
+            <div class="setting-row">
+              <label>Active Model</label>
+              <select class="settings-select" id="settings-model"></select>
+            </div>
+            <p class="setting-hint">Changes apply to the next message sent.</p>
+          </div>
+
+          <div class="settings-panel">
+            <h3 class="settings-panel-title">Retrieval</h3>
+            <div class="setting-row">
+              <label>Top-K Chunks</label>
+              <div class="range-wrap">
+                <input type="range" id="topk-range" min="2" max="20" value="8" />
+                <span class="range-val" id="topk-val">8</span>
+              </div>
+            </div>
+            <div class="setting-row">
+              <label>Similarity Threshold</label>
+              <div class="range-wrap">
+                <input type="range" id="threshold-range" min="0" max="100" value="35" />
+                <span class="range-val" id="threshold-val">0.35</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-panel">
+            <h3 class="settings-panel-title">Custom System Prompt</h3>
+            <textarea
+              class="settings-textarea"
+              id="custom-prompt"
+              rows="6"
+              placeholder="Override the default system prompt. Leave blank to use the built-in RAG prompt."
+            ></textarea>
+            <button class="btn btn-secondary" id="save-prompt-btn">Save Prompt</button>
+          </div>
+
+          <div class="settings-panel">
+            <h3 class="settings-panel-title">System Status</h3>
+            <div class="info-row"><span class="info-key">Version</span><span class="info-val">NeuralBase 4.1</span></div>
+            <div class="info-row"><span class="info-key">Engine</span><span class="info-val" id="settings-engine">—</span></div>
+            <div class="info-row"><span class="info-key">NVIDIA Endpoint</span><span class="info-val">integrate.api.nvidia.com</span></div>
+            <div class="info-row"><span class="info-key">Uptime</span><span class="info-val" id="settings-uptime">—</span></div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Wiki modal -->
+<div class="modal-overlay hidden" id="wiki-modal-overlay">
+  <div class="wiki-modal" id="wiki-modal">
+    <div class="wiki-modal-header">
+      <h3 id="wiki-modal-title">Wiki Page</h3>
+      <button class="modal-close" id="wiki-modal-close">✕</button>
+    </div>
+    <div class="wiki-modal-body" id="wiki-modal-body"></div>
+    <div class="wiki-modal-footer">
+      <span class="wiki-modal-meta" id="wiki-modal-meta"></span>
+      <button class="btn btn-ghost" id="wiki-modal-save">Save to Wiki</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

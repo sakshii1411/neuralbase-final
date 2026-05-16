@@ -1,0 +1,24 @@
+{
+  "name": "neuralbase-ai-knowledge-base",
+  "version": "4.1.0",
+  "description": "Production-ready AI Knowledge Base with RAG, semantic search, knowledge graph, and NVIDIA NIM integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@xenova/transformers": "^2.17.2",
+    "dotenv": "^16.6.1",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^2.7.0",
+    "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

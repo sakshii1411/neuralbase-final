@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: neuralbase-kb
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: NVIDIA_MODEL
+        value: meta/llama-3.1-8b-instruct
+      - key: PORT
+        value: "3000"
