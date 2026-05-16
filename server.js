@@ -605,7 +605,11 @@ OUTPUT FORMAT:
 
 At the very end of your answer, on a new line, output EXACTLY:
 FOLLOW_UPS:["Specific follow-up question 1?","Specific follow-up question 2?","Specific follow-up question 3?"]
-The follow-up questions must be specific to the topic answered, not generic.
+The follow-up questions must:
+- Be specific to the topic answered.
+- ONLY reference topics, features, or steps explicitly covered in the provided documentation.
+- NEVER suggest questions about topics not present in the documents (e.g. do not ask about editing or deleting something if the document does not cover it).
+- If fewer than 3 valid document-grounded follow-ups exist, output only as many as are genuinely supported. Do not invent questions to fill the quota.
 
 DOCUMENTATION:
 ${context}`;
