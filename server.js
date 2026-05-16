@@ -646,7 +646,7 @@ ${context}`;
           { role: "system", content: systemPrompt },
           ...messages.map(m => ({ role: m.role, content: String(m.content).slice(0, 4000) })),
         ],
-        temperature: 0.1,
+        temperature: 0.05,
         top_p:       0.85,
         max_tokens:  1200,
         stream:      true,
@@ -738,15 +738,19 @@ ${context}`;
 
 const FIXED_SAMPLE_QUESTIONS = [
   "How do I create a new Evening Study session?",
+  "How can I add students to Evening Study?",
   "How can I add students using groups or classes?",
-  "Can recurring days be selected while creating sessions?",
-  "How do I mark attendance for Evening Study?",
-  "How can I send notifications to parents or guardians?",
-  "How do staff members view assigned sessions?",
+  "How do I add fully paid and instalment students together?",
+  "How do I notify parents about attendance?",
+  "Can staff send notifications directly from attendance records?",
+  "How do I send a school-wide notification?",
+  "How do I create a notification category?",
+  "How can I edit an existing calendar event?",
+  "How are staff added to the school database?",
+  "What details are required during staff registration?",
+  "Can teachers register as both Staff and Parent?",
+  "How do I send a notification to one parent only?",
   "How do I manage Evening Study time slots?",
-  "How can I edit an existing Evening Study session?",
-  "How do I create student payment groups?",
-  "How do I manage calendar events in the system?",
 ];
 
 app.get("/api/sample-questions", (_req, res) => {
