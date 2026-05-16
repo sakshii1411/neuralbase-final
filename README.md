@@ -7,7 +7,7 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-neuralbase--final.onrender.com-6366f1?style=for-the-badge&logo=render&logoColor=white)](https://neuralbase-final.onrender.com)
 [![Version](https://img.shields.io/badge/Version-4.1-10b981?style=for-the-badge)](#)
 [![NVIDIA NIM](https://img.shields.io/badge/Powered%20by-NVIDIA%20NIM-76b900?style=for-the-badge&logo=nvidia&logoColor=white)](https://integrate.api.nvidia.com)
-[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](#)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?style=for-the-badge&logo=node.js&logoColor=white)](#)
 [![License](https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge)](#license)
 
 <br/>
@@ -35,7 +35,6 @@
 - [Configuration](#configuration)
 - [Deployment](#deployment)
 - [Project Structure](#project-structure)
-- [Contributing](#contributing)
 - [License](#license)
 
 ---
@@ -54,12 +53,12 @@ Every answer is grounded strictly in your uploaded content — the system will n
 |---|---|
 | 🤖 **Ask AI (RAG)** | Semantic search over your documents with LLM-generated answers, strictly grounded in your content |
 | 📄 **Document Management** | Upload up to 20 files (PDF, TXT, MD) up to 15 MB each; documents are chunked, embedded, and indexed automatically |
-| 🔮 **Knowledge Graph** | AI extracts key concepts and relationships from your corpus and renders them as an interactive, zoomable graph |
+| 🔮 **Knowledge Graph** | AI extracts key concepts and relationships from your corpus and renders them as an interactive, zoomable canvas graph |
 | 📖 **Wiki Compilation** | One-click generation of AI-written wiki pages summarising each major topic in your knowledge base |
 | 📊 **Live Dashboard** | Real-time stats — indexed chunks, query counts, graph nodes, wiki pages, system health |
 | ⚙️ **Configurable Retrieval** | Tune Top-K chunks (default 8) and similarity threshold (default 0.35) directly from the UI |
 | 🧠 **Custom System Prompt** | Override the base prompt to steer the AI's tone, focus, and output style |
-| 🔄 **Multi-Model Support** | Switch the active LLM from the Settings panel without restarting the server |
+| 🔄 **Multi-Model Support** | Switch between Llama 3.1 8B, 3.3 70B, and 3.2 3B from the Settings panel without restarting |
 
 ---
 
@@ -69,31 +68,32 @@ Every answer is grounded strictly in your uploaded content — the system will n
 ┌─────────────────────────────────────────────────────────────┐
 │                        Browser (SPA)                        │
 │   Dashboard │ Ask AI │ Documents │ Knowledge Graph │ Wiki   │
+│              Vanilla JS · HTML5 · CSS3                      │
 └──────────────────────────┬──────────────────────────────────┘
-                           │ REST / WebSocket
+                           │ REST API (18 routes)
 ┌──────────────────────────▼──────────────────────────────────┐
-│                     Python Backend                          │
+│                  Node.js + Express Backend                  │
 │                                                             │
 │  ┌─────────────┐   ┌──────────────┐   ┌─────────────────┐  │
 │  │  Ingestion  │   │  RAG Engine  │   │  Graph Builder  │  │
 │  │  Pipeline   │──▶│  (Retrieve + │   │  (Concept       │  │
-│  │  chunk/     │   │   Generate)  │   │   Extraction)   │  │
-│  │  embed/     │   └──────┬───────┘   └────────┬────────┘  │
+│  │  chunk /    │   │   Generate)  │   │   Extraction)   │  │
+│  │  embed /    │   └──────┬───────┘   └────────┬────────┘  │
 │  │  index      │          │                    │            │
 │  └─────────────┘   ┌──────▼───────┐   ┌────────▼────────┐  │
-│                    │  NVIDIA NIM  │   │  Vector Store   │  │
-│                    │  (LLM API)   │   │  (Embeddings)   │  │
+│                    │  NVIDIA NIM  │   │  JSON Vector    │  │
+│                    │  (LLM API)   │   │  Store + BM25   │  │
 │                    └──────────────┘   └─────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **RAG Pipeline — step by step:**
 
-1. **Ingest** — Uploaded documents are parsed, split into overlapping chunks, and embedded via a sentence embedding model.
-2. **Index** — Chunk embeddings are stored in a vector index for fast similarity lookup.
-3. **Retrieve** — At query time, the user's question is embedded and the top-K most similar chunks are retrieved.
-4. **Generate** — Retrieved chunks + the question are sent to NVIDIA NIM; the LLM synthesises a grounded answer.
-5. **Graph** — A separate AI pass extracts named concepts and their relationships, stored as a graph and rendered in the browser.
+1. **Ingest** — Uploaded documents are parsed with `pdf-parse`, split into 500-word overlapping chunks (50-word sliding window), and embedded using the local `Xenova/all-MiniLM-L6-v2` model via `@xenova/transformers`.
+2. **Index** — Chunk embeddings are stored in a local JSON file (`data/vectors.json`) via a custom `VectorStore` class with cosine similarity search. If embeddings are unavailable, BM25 keyword scoring activates automatically.
+3. **Retrieve** — At query time, the user's question is embedded and the top-K most similar chunks are retrieved by cosine similarity (or BM25 fallback).
+4. **Generate** — Retrieved chunks + the question are sent to NVIDIA NIM via a plain HTTP request; the LLM synthesises a grounded answer with follow-up suggestions.
+5. **Graph** — A separate NVIDIA NIM call extracts named concepts and relationships from indexed documents, stored in memory and rendered as a force-directed canvas graph.
 
 ---
 
@@ -101,16 +101,18 @@ Every answer is grounded strictly in your uploaded content — the system will n
 
 | Layer | Technology |
 |---|---|
-| **Language** | Python 3.10+ |
-| **Web Framework** | Flask / FastAPI |
+| **Runtime** | Node.js 18+ |
+| **Web Framework** | Express.js |
 | **LLM Provider** | NVIDIA NIM (`integrate.api.nvidia.com`) |
-| **Embeddings** | Sentence Transformers / NVIDIA Embedding Models |
-| **Vector Search** | FAISS / ChromaDB |
-| **Graph Processing** | NetworkX |
-| **Frontend** | Vanilla JS, HTML5, CSS3 (Single Page App) |
-| **Graph Visualisation** | D3.js / Vis.js |
+| **LLM Models** | Llama 3.1 8B (default · Fast), Llama 3.3 70B (Best), Llama 3.2 3B (Light) |
+| **Embeddings** | `@xenova/transformers` — `Xenova/all-MiniLM-L6-v2` (local, ~25 MB, no API key needed) |
+| **Search Fallback** | BM25 keyword scoring (automatic when embeddings unavailable) |
+| **Vector Store** | Custom JSON-file store with cosine similarity (`data/vectors.json`) |
+| **Document Parsing** | `pdf-parse` (PDF), built-in Node.js (TXT, MD) |
+| **Graph Visualisation** | HTML5 Canvas API + custom JavaScript physics simulation |
+| **Frontend** | Vanilla JavaScript · HTML5 · CSS3 (Single Page App) |
+| **File Uploads** | `multer` (in-memory storage) |
 | **Deployment** | Render.com |
-| **Document Parsing** | PyMuPDF (PDF), standard Python (TXT, MD) |
 
 ---
 
@@ -118,9 +120,8 @@ Every answer is grounded strictly in your uploaded content — the system will n
 
 ### Prerequisites
 
-- Python **3.10** or higher
-- A valid **NVIDIA NIM API key** — [get one here](https://integrate.api.nvidia.com)
-- `pip` or `uv` for package management
+- **Node.js 18** or higher — [download here](https://nodejs.org)
+- A valid **NVIDIA NIM API key** — [get one free at build.nvidia.com](https://build.nvidia.com)
 - Git
 
 ### Installation
@@ -130,46 +131,51 @@ Every answer is grounded strictly in your uploaded content — the system will n
 git clone https://github.com/sakshii1411/neuralbase-final.git
 cd neuralbase-final
 
-# 2. Create and activate a virtual environment
-python -m venv venv
-source venv/bin/activate        # macOS / Linux
-venv\Scripts\activate           # Windows
-
-# 3. Install dependencies
-pip install -r requirements.txt
+# 2. Install dependencies
+npm install
 ```
+
+> The first run will automatically download the `Xenova/all-MiniLM-L6-v2` embedding model (~25 MB) into `.model-cache/`. This is a one-time download.
 
 ### Environment Variables
 
 Create a `.env` file in the project root:
 
 ```env
-# NVIDIA NIM
+# Required
 NVIDIA_API_KEY=your_nvidia_nim_api_key_here
-NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
 
-# App settings (optional overrides)
-TOP_K_CHUNKS=8
-SIMILARITY_THRESHOLD=0.35
-MAX_UPLOAD_SIZE_MB=15
-MAX_UPLOAD_FILES=20
-
-# Flask / server
-FLASK_ENV=production
-SECRET_KEY=your_secret_key_here
-PORT=5000
+# Optional overrides
+NVIDIA_MODEL=meta/llama-3.1-8b-instruct
+PORT=3000
+NODE_ENV=development
 ```
 
 > ⚠️ Never commit your `.env` file. It is already listed in `.gitignore`.
 
+**Available models for `NVIDIA_MODEL`:**
+
+| Value | Name | Speed |
+|---|---|---|
+| `meta/llama-3.1-8b-instruct` | Llama 3.1 8B | Fast (default) |
+| `meta/llama-3.3-70b-instruct` | Llama 3.3 70B | Best quality |
+| `meta/llama-3.2-3b-instruct` | Llama 3.2 3B | Lightest |
+
 ### Running Locally
 
 ```bash
-# Start the development server
-python app.py
+# Production mode
+node server.js
+
+# Development mode (auto-restart on file changes)
+npm run dev
 ```
 
-Open your browser at **[http://localhost:5000](http://localhost:5000)**.
+Open your browser at **[http://localhost:3000](http://localhost:3000)**.
+
+The terminal will confirm which embedding mode is active:
+- `✓ Semantic embeddings ready (Xenova all-MiniLM-L6-v2)` — full semantic search
+- `⚠ Embeddings unavailable, using keyword search` — BM25 fallback
 
 ---
 
@@ -177,11 +183,14 @@ Open your browser at **[http://localhost:5000](http://localhost:5000)**.
 
 ### 1 — Upload Documents
 
-Navigate to the **Documents** tab. Drag and drop or browse to upload PDFs, `.txt`, or `.md` files (up to 20 files, 15 MB each). The system will automatically chunk, embed, and index your content. Watch the dashboard counters update in real time.
+Navigate to the **Documents** tab. Drag and drop or browse to upload PDFs, `.txt`, or `.md` files (up to 20 files, 15 MB each). The system will automatically parse, chunk, embed, and index your content. Dashboard counters update in real time.
 
 ### 2 — Ask AI
 
-Go to the **Ask AI** tab and type your question. NeuralBase will retrieve the most relevant chunks from your indexed documents and generate a grounded answer. It will not answer questions that fall outside your uploaded content.
+Go to the **Ask AI** tab and type your question. NeuralBase retrieves the most relevant chunks from your indexed documents using cosine similarity and generates a grounded answer via NVIDIA NIM. Each answer shows:
+- A **relevance badge** (HIGH / MEDIUM) based on the top chunk's similarity score
+- **Source citations** — the exact documents the answer came from
+- **Follow-up suggestions** — auto-generated related questions
 
 ```
 Shift + Enter   →  new line in your query
@@ -190,62 +199,57 @@ Enter           →  send query
 
 ### 3 — Build the Knowledge Graph
 
-Once documents are indexed, open the **Knowledge Graph** tab and click **Build Graph**. The AI will extract key concepts and relationships, then render them as an interactive, pannable, zoomable concept map. Click any node to see its details.
+Once documents are indexed, open the **Knowledge Graph** tab and click **Build Graph**. The AI extracts key concepts and relationships and renders them as an interactive force-directed canvas graph. Click any node to see its description and connections.
 
 ### 4 — Compile the Wiki
 
-In the **Wiki** tab, click **Compile Wiki**. NeuralBase generates a structured wiki page for each major topic it finds across your documents. Individual pages can be saved, edited, or exported.
+In the **Wiki** tab, click **Compile Wiki** to generate AI-written summary pages across your documents. Every query you make is also automatically saved as a wiki exploration page — the knowledge base grows with every use.
 
 ### 5 — Tune Settings
 
 Under **Settings** you can:
-
-- Switch the active LLM (changes apply to the next query)
+- Switch the active LLM model (applies to the next query)
 - Adjust **Top-K Chunks** — how many retrieved passages the LLM sees (default: `8`)
 - Adjust **Similarity Threshold** — minimum relevance score to include a chunk (default: `0.35`)
-- Write a **Custom System Prompt** to steer the AI's behaviour, tone, or output format
+- Write a **Custom System Prompt** to steer the AI's tone or output format
 
 ---
 
 ## Configuration
 
-All runtime behaviour can be adjusted either via `.env` or directly in the **Settings** UI.
-
 | Setting | Default | Description |
 |---|---|---|
-| `TOP_K_CHUNKS` | `8` | Number of document chunks passed to the LLM per query |
-| `SIMILARITY_THRESHOLD` | `0.35` | Minimum cosine similarity for a chunk to be retrieved |
-| `MAX_UPLOAD_SIZE_MB` | `15` | Per-file upload limit |
-| `MAX_UPLOAD_FILES` | `20` | Maximum files in the knowledge base at once |
-| `NVIDIA_BASE_URL` | `https://integrate.api.nvidia.com/v1` | NVIDIA NIM endpoint |
+| `NVIDIA_API_KEY` | — | Your NVIDIA NIM API key (required) |
+| `NVIDIA_MODEL` | `meta/llama-3.1-8b-instruct` | LLM model to use |
+| `PORT` | `3000` | Port the Express server listens on |
+| `NODE_ENV` | `development` | Set to `production` on deployment |
+| Top-K Chunks (UI) | `8` | Chunks passed to LLM per query |
+| Similarity Threshold (UI) | `0.35` | Minimum cosine similarity to retrieve a chunk |
 
 ---
 
 ## Deployment
 
-NeuralBase is configured for one-click deployment on **[Render](https://render.com)**.
+NeuralBase is configured for one-click deployment on **[Render](https://render.com)** via the included `render.yaml`.
 
 ### Deploy to Render
 
 1. Fork this repository to your GitHub account.
 2. Create a new **Web Service** on Render and connect your fork.
-3. Set the following in the Render dashboard under **Environment**:
+3. Set the following environment variable in the Render dashboard:
 
    | Key | Value |
    |---|---|
    | `NVIDIA_API_KEY` | your NVIDIA NIM key |
-   | `SECRET_KEY` | a long random string |
-   | `PYTHON_VERSION` | `3.10.0` |
 
-4. Render will auto-detect the `requirements.txt` and build command. Set the **Start Command** to:
+   Render will automatically use the `render.yaml` config:
+   - **Build command:** `npm install`
+   - **Start command:** `node server.js`
+   - **Runtime:** Node.js
 
-   ```
-   python app.py
-   ```
+4. Click **Deploy**. Your live URL will be available within a few minutes.
 
-5. Click **Deploy**. Your live URL will be available within a few minutes.
-
-> **Note:** The free tier on Render spins down after inactivity. The first request after a cold start may take 30–60 seconds.
+> **Note:** The free tier on Render spins down after inactivity. The first request after a cold start may take 30–60 seconds while the embedding model reloads.
 
 ---
 
@@ -253,43 +257,56 @@ NeuralBase is configured for one-click deployment on **[Render](https://render.c
 
 ```
 neuralbase-final/
-├── app.py                  # Main application entry point
-├── requirements.txt        # Python dependencies
-├── .env.example            # Environment variable template
+├── server.js               # Main Express server — 18 API routes
+├── documents.js            # Built-in sample documents
+├── package.json            # Node.js dependencies & scripts
+├── render.yaml             # Render.com deployment config
 ├── .gitignore
 │
-├── core/
-│   ├── ingestion.py        # Document parsing, chunking, embedding
-│   ├── retrieval.py        # Vector similarity search
-│   ├── generation.py       # NVIDIA NIM LLM calls & RAG pipeline
-│   ├── graph_builder.py    # Concept extraction & graph construction
-│   └── wiki_compiler.py    # Wiki page generation
+├── lib/
+│   ├── embedder.js         # @xenova/transformers embedding pipeline + BM25 fallback
+│   ├── vectorStore.js      # JSON-file vector store with cosine similarity search
+│   ├── chunker.js          # Sliding-window text chunker (500 words, 50-word overlap)
+│   └── pdfParser.js        # PDF text extraction via pdf-parse
 │
-├── static/
-│   ├── app.js              # Frontend SPA logic
-│   ├── style.css           # Styles
-│   └── graph.js            # Knowledge graph visualisation
+├── public/
+│   ├── index.html          # Single-page application shell
+│   ├── app.js              # Frontend SPA logic + HTML5 Canvas graph renderer
+│   └── style.css           # Styles
 │
-├── templates/
-│   └── index.html          # Single-page application shell
-│
-└── uploads/                # Temporary file storage (git-ignored)
+└── data/
+    └── vectors.json        # Persisted chunk embeddings (auto-created, git-ignored)
 ```
+
+### API Routes
+
+| Method | Route | Description |
+|---|---|---|
+| GET | `/api/health` | Server and embedding status |
+| GET | `/api/stats` | Dashboard stats (chunks, nodes, wiki pages) |
+| GET | `/api/models` | Available LLM models |
+| GET | `/api/usage` | Query usage tracking |
+| POST | `/api/feedback` | Submit answer feedback |
+| GET | `/api/documents` | List indexed documents |
+| POST | `/api/upload` | Upload and index documents |
+| DELETE | `/api/documents/:id` | Remove a document and its chunks |
+| POST | `/api/chat` | RAG query — retrieve + generate |
+| GET | `/api/sample-questions` | Suggested starter questions |
+| GET | `/api/graph` | Fetch current knowledge graph |
+| POST | `/api/graph/build` | Build graph from indexed documents |
+| POST | `/api/graph/node-answer` | Get LLM explanation for a graph node |
+| GET | `/api/wiki` | Fetch saved wiki pages |
+| POST | `/api/wiki/save` | Save a query-answer as a wiki page |
+| POST | `/api/wiki/compile` | Compile cross-document wiki summaries |
+| DELETE | `/api/wiki/:id` | Delete a wiki page |
 
 ---
 
-## Contributing
+## License
 
-Contributions, bug reports, and feature requests are welcome!
+MIT © [Sakshi Awasthi](https://github.com/sakshii1411)
 
-```bash
-# Fork the repo, then:
-git checkout -b feature/your-feature-name
-git commit -m "feat: describe your change"
-git push origin feature/your-feature-name
-# Open a Pull Request
-```
-
+---
 
 <div align="center">
 
