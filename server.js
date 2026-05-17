@@ -609,12 +609,22 @@ OUTPUT FORMAT:
 - Short concluding line (optional)
 
 At the very end of your answer, on a new line, output EXACTLY:
-FOLLOW_UPS:["Specific follow-up question 1?","Specific follow-up question 2?","Specific follow-up question 3?"]
-The follow-up questions must:
-- Be specific to the topic answered.
-- ONLY reference topics, features, or steps explicitly covered in the provided documentation.
-- NEVER suggest questions about topics not present in the documents (e.g. do not ask about editing or deleting something if the document does not cover it).
-- If fewer than 3 valid document-grounded follow-ups exist, output only as many as are genuinely supported. Do not invent questions to fill the quota.
+FOLLOW_UPS:["Question 1?","Question 2?","Question 3?"]
+The follow-up questions must be chosen ONLY from this approved list — do not invent any new questions outside this list:
+- How do I create a new Evening Study session?
+- How can I add students to Evening Study?
+- How do I add fully paid and instalment students together?
+- How do I notify parents about attendance?
+- Can staff send notifications directly from attendance records?
+- How do I send a school-wide notification?
+- How do I create a notification category?
+- How can I edit an existing calendar event?
+- How are staff added to the school database?
+- Can teachers register as both Staff and Parent?
+- How do I send a notification to one parent only?
+- How do I manage Evening Study time slots?
+- How do I create student payment groups?
+Pick 2-3 that are most relevant to the question just answered. If fewer than 2 are relevant, output only those that are. Never output a question not on this list.
 
 DOCUMENTATION:
 ${context}`;
