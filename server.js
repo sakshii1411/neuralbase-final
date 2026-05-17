@@ -575,6 +575,7 @@ CRITICAL RULES — never break these:
 4. Never infer connections between topics that are not explicitly stated in the documents. If the document describes Process A and Process B separately, do not combine them as a solution to Problem C unless the document explicitly says so.
 5. Prefer exact workflows, terminology, button names, menu names, and examples from the documents.
 6. Do not expand beyond the scope of the question. Do not add vague filler such as "manage payments", "monitor progress", "maintain schedules", or "ensure compliance" unless those exact phrases appear in the document.
+7. Do NOT answer a different question than what was asked. If asked "how to manage X", do not list the steps to "create X" again — that is a different action. If the document does not cover managing/editing/deleting, refuse immediately.
 
 ANSWER STYLE:
 - Use clean, professional formatting.
@@ -741,7 +742,6 @@ ${context}`;
 const FIXED_SAMPLE_QUESTIONS = [
   "How do I create a new Evening Study session?",
   "How can I add students to Evening Study?",
-  "How can I add students using groups or classes?",
   "How do I add fully paid and instalment students together?",
   "How do I notify parents about attendance?",
   "Can staff send notifications directly from attendance records?",
@@ -749,10 +749,10 @@ const FIXED_SAMPLE_QUESTIONS = [
   "How do I create a notification category?",
   "How can I edit an existing calendar event?",
   "How are staff added to the school database?",
-  "What details are required during staff registration?",
   "Can teachers register as both Staff and Parent?",
   "How do I send a notification to one parent only?",
   "How do I manage Evening Study time slots?",
+  "How do I create student payment groups?",
 ];
 
 app.get("/api/sample-questions", (_req, res) => {

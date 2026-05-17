@@ -141,9 +141,9 @@ function markdownToHtml(raw) {
     }
 
     // ── Heading ───────────────────────────────────────────────────────────────
-    const headMatch = line.match(/^(#{1,3})\s+(.+)/);
+    const headMatch = line.match(/^(#{1,4})\s+(.+)/);
     if (headMatch) {
-      const level = headMatch[1].length;
+      const level = Math.min(headMatch[1].length, 3);
       output.push(`<h${level + 2} class="md-h${level}">${inlineHtml(headMatch[2])}</h${level + 2}>`);
       i++;
       continue;
@@ -731,8 +731,8 @@ function renderDocumentList(documents) {
       <div class="doc-card" id="doc-${doc.id.replace(/[^a-zA-Z0-9-_]/g, "_")}">
         <div class="doc-card-header">
           <div class="doc-title">${escapeHtml(doc.title)}</div>
-          <span class="doc-badge ${isBuiltIn ? "built-in" : "uploaded"}">
-            ${isBuiltIn ? "Built-in" : "Uploaded"}
+          <span class="doc-badge uploaded">
+            Indexed
           </span>
         </div>
         <div class="doc-category">${escapeHtml(doc.category || "General")}</div>
