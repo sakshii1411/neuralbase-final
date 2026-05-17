@@ -731,9 +731,7 @@ function renderDocumentList(documents) {
       <div class="doc-card" id="doc-${doc.id.replace(/[^a-zA-Z0-9-_]/g, "_")}">
         <div class="doc-card-header">
           <div class="doc-title">${escapeHtml(doc.title)}</div>
-          <span class="doc-badge uploaded">
-            Indexed
-          </span>
+
         </div>
         <div class="doc-category">${escapeHtml(doc.category || "General")}</div>
         ${doc.preview ? `<div class="doc-preview">${escapeHtml(doc.preview)}</div>` : ""}
